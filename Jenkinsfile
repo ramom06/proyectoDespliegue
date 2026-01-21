@@ -30,15 +30,18 @@ pipeline {
         }
 
         stage('Paso 4: Desplegar') {
-            steps {
-                dir('CalculadoraWeb/CalculadoraWeb') {
-                    // Generamos el archivo .war omitiendo los tests (ya los pasamos en el paso anterior)
-                    sh 'mvn package -DskipTests'
-                    
-                    // Forzamos el nombre a CalculadoraWeb.war para que sea fácil de acceder en el navegador
-                    sh 'cp target/*.war /var/jenkins_home/tomcat-deploy/CalculadoraWeb.war'
-                }
-            }
+    steps {
+        dir('CalculadoraWeb/CalculadoraWeb') {
+            // 1. Empaquetamos el proyecto
+            sh 'mvn package -DskipTests'
+            
+            // 2. Copiamos el archivo (usando un comodín * por si cambia la versión)
+            sh 'cp target/*.war /var/jenkins_home/tomcat-deploy/CalculadoraWeb.war'
+            
+            // 3. ¡IMPORTANTE! Listamos el destino para ver en el log de Jenkins si está ahí
+            sh 'ls -lh /var/jenkins_home/tomcat-deploy/'
         }
+    }
+}
     }
 }
