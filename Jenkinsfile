@@ -14,7 +14,7 @@ pipeline {
         // Compila proyecto
         stage('Paso 2: Compilar') {
             steps {
-                dir('CalculadoraWeb') { 
+                dir('CalculadoraWeb/CalculadoraWeb') { 
                     sh 'mvn clean compile'
                 }
             }
