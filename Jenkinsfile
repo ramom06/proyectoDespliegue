@@ -1,39 +1,43 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven'    }
+        maven 'Maven'
+    }
 
     stages {
-        // git
         stage('Paso 1: Git Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        // Compila proyecto
         stage('Paso 2: Compilar') {
             steps {
-                dir('CalculadoraWeb/CalculadoraWeb') { 
+                // Entramos en la carpeta donde está el pom.xml
+                dir('CalculadoraWeb/CalculadoraWeb') {
                     sh 'mvn clean compile'
                 }
             }
         }
 
-        // Test
         stage('Paso 3: Test') {
             steps {
-                sh 'mvn test'
+                // También necesitamos entrar aquí para los tests
+                dir('CalculadoraWeb/CalculadoraWeb') {
+                    sh 'mvn test'
+                }
             }
         }
 
-        // WAR
-                stage('Paso 4: Desplegar') {
-                    steps {
-                        // Generamos el archivo .war
-                        sh 'mvn package -DskipTests'
-                        sh 'cp target/*.war /var/jenkins_home/tomcat-deploy/'
-                    }
+        stage('Paso 4: Desplegar') {
+            steps {
+                dir('CalculadoraWeb/CalculadoraWeb') {
+                    // Generamos el archivo .war
+                    sh 'mvn package -DskipTests'
+                    // Copiamos el archivo generado a la carpeta de Tomcat
+                    sh 'cp target/*.war /var/jenkins_home/tomcat-deploy/'
                 }
+            }
+        }
     }
 }
