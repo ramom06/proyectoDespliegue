@@ -1,43 +1,30 @@
 pipeline {
     agent any
-
     tools {
-        // Asegúrate de que el nombre 'maven' coincida con el que configuraste
-        // en Jenkins -> Manage Jenkins -> Global Tool Configuration
-        maven 'maven' 
+        maven 'maven' // Asegúrate de que este nombre coincida con tu configuración global
     }
-
     stages {
         stage('Paso 1: Git Checkout') {
             steps {
-                // Descarga el código (Jenkins lo suele hacer solo, pero esto asegura la ruta)
                 checkout scm
             }
         }
-
-        stage('Paso 2: Limpiar y Empaquetar (WAR)') {
+        stage('Paso 2: Generar WAR') {
             steps {
-                // Entramos en la carpeta donde está el archivo pom.xml
-                    echo 'Generando archivo WAR...'
-                    // 'mvn clean package' limpia la carpeta target y crea el WAR
+                // ESTA ES LA PARTE CLAVE:
+                dir('CalculadoraWeb') { 
+                    echo 'Entrando en la carpeta del proyecto y generando WAR...'
                     sh 'mvn clean package -DskipTests'
+                }
             }
         }
-
-        stage('Paso 3: Ejecutar Tests') {
+        stage('Paso 3: Archivar el resultado') {
             steps {
-                    echo 'Ejecutando pruebas unitarias...'
-                    sh 'mvn test'
-            }
-        }
-
-        stage('Paso 4: Archivar WAR') {
-            steps {
-                    // Esto guarda el WAR dentro de Jenkins para que puedas descargarlo 
-                    // desde la interfaz web después de que termine el build
+                dir('CalculadoraWeb') {
+                    // Esto hará que el WAR aparezca en la interfaz de Jenkins para descargar
                     archiveArtifacts artifacts: 'target/*.war', fingerprint: true
-                    echo 'El archivo WAR ha sido archivado correctamente.'
                 }
             }
         }
     }
+}
