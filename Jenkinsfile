@@ -18,26 +18,21 @@ pipeline {
         stage('Paso 2: Limpiar y Empaquetar (WAR)') {
             steps {
                 // Entramos en la carpeta donde está el archivo pom.xml
-                dir('CalculadoraWeb/CalculadoraWeb') {
                     echo 'Generando archivo WAR...'
                     // 'mvn clean package' limpia la carpeta target y crea el WAR
                     sh 'mvn clean package -DskipTests'
-                }
             }
         }
 
         stage('Paso 3: Ejecutar Tests') {
             steps {
-                dir('CalculadoraWeb/CalculadoraWeb') {
                     echo 'Ejecutando pruebas unitarias...'
                     sh 'mvn test'
-                }
             }
         }
 
         stage('Paso 4: Archivar WAR') {
             steps {
-                dir('CalculadoraWeb/CalculadoraWeb') {
                     // Esto guarda el WAR dentro de Jenkins para que puedas descargarlo 
                     // desde la interfaz web después de que termine el build
                     archiveArtifacts artifacts: 'target/*.war', fingerprint: true
