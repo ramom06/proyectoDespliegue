@@ -1,33 +1,48 @@
 pipeline {
-    agent any // Se ejecuta en cualquier nodo disponible
+    agent any
+
+    tools {
+        // Asegúrate de que el nombre 'maven' coincida con el que configuraste
+        // en Jenkins -> Manage Jenkins -> Global Tool Configuration
+        maven 'maven' 
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Paso 1: Git Checkout') {
             steps {
-                echo 'Descargando código del repositorio...'
-                // Aquí Jenkins suele bajar el código automáticamente si lo vinculas a GitHub
+                // Descarga el código (Jenkins lo suele hacer solo, pero esto asegura la ruta)
+                checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Paso 2: Limpiar y Empaquetar (WAR)') {
             steps {
-                echo 'Compilando el proyecto...'
-                // Ejemplo para Node.js: sh 'npm install'
-                // Ejemplo para Python: sh 'pip install -r requirements.txt'
+                // Entramos en la carpeta donde está el archivo pom.xml
+                dir('CalculadoraWeb/CalculadoraWeb') {
+                    echo 'Generando archivo WAR...'
+                    // 'mvn clean package' limpia la carpeta target y crea el WAR
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
 
-        stage('Test') {
+        stage('Paso 3: Ejecutar Tests') {
             steps {
-                echo 'Ejecutando pruebas unitarias...'
-                // Ejemplo: sh 'npm test'
+                dir('CalculadoraWeb/CalculadoraWeb') {
+                    echo 'Ejecutando pruebas unitarias...'
+                    sh 'mvn test'
+                }
             }
         }
 
-        stage('Deploy') {
+        stage('Paso 4: Archivar WAR') {
             steps {
-                echo 'Desplegando aplicación...'
-                // Aquí irían tus comandos de Docker para subir la imagen o reiniciar el contenedor
+                dir('CalculadoraWeb/CalculadoraWeb') {
+                    // Esto guarda el WAR dentro de Jenkins para que puedas descargarlo 
+                    // desde la interfaz web después de que termine el build
+                    archiveArtifacts artifacts: 'target/*.war', fingerprint: true
+                    echo 'El archivo WAR ha sido archivado correctamente.'
+                }
             }
         }
     }
