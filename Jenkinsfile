@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        maven 'maven' // Asegúrate de que este nombre coincida con tu configuración global
+        maven 'maven'
     }
     stages {
         stage('Paso 1: Git Checkout') {
@@ -9,26 +9,35 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Paso 2: Generar WAR') {
+
+        stage('Paso 2: Pruebas Unitarias') {
             steps {
-                // ESTA ES LA PARTE CLAVE:
-                dir('CalculadoraWeb') { 
-                    echo 'Entrando en la carpeta del proyecto y generando WAR...'
-                    sh 'mvn clean package -DskipTests'
+                dir('CalculadoraWeb') {
+                    echo 'Ejecutando pruebas con Maven...'
+                    // Al NO usar -DskipTests, Maven buscará y ejecutará los tests
+                    sh 'mvn test'
                 }
             }
         }
-        stage('Paso 3: Archivar y Desplegar') {
+
+        stage('Paso 3: Generar WAR') {
             steps {
                 dir('CalculadoraWeb') {
-                    // 1. Lo archivamos en Jenkins (opcional)
+                    echo 'Generando archivo WAR...'
+                    // Aquí usamos -DskipTests para no repetir las pruebas que ya pasaron
+                    sh 'mvn package -DskipTests'
+                }
+            }
+        }
+
+        stage('Paso 4: Archivar y Desplegar') {
+            steps {
+                dir('CalculadoraWeb') {
                     archiveArtifacts artifacts: 'target/*.war', fingerprint: true
                     
-                    // 2. LO COPIAMOS AL VOLUMEN COMPARTIDO
-                    // Ajusta la ruta /var/jenkins_home/... a la que usaste en tu Docker
+                    // Solo llegará aquí si el Paso 2 (Tests) fue EXITOSO
                     sh 'cp target/*.war /var/jenkins_home/tomcat-deploy/CalculadoraWeb.war'
-                    
-                    echo '¡Archivo copiado al volumen compartido!'
+                    echo '¡Proyecto desplegado con éxito tras pasar las pruebas!'
                 }
             }
         }
