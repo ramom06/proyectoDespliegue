@@ -1,9 +1,11 @@
 pipeline {
     agent any
+	//Aquí indicamos que vamos a usar Maven, importante usar el mismo nombre que le dimos en la conf de Jenkins
     tools {
         maven 'maven'
     }
     stages {
+	//Descarga el código del repositorio configurado
         stage('Paso 1: Git Checkout') {
             steps {
                 checkout scm
@@ -12,9 +14,9 @@ pipeline {
 
         stage('Paso 2: Pruebas Unitarias') {
             steps {
+		//Le decimos la carpeta en la que esta el proyecto
                 dir('CalculadoraWeb') {
-                    echo 'Ejecutando pruebas con Maven...'
-                    // Al NO usar -DskipTests, Maven buscará y ejecutará los tests
+			//Maven busca en la carpeta java una clase test.java y ejecuta todos los @Test
                     sh 'mvn test'
                 }
             }
@@ -24,7 +26,7 @@ pipeline {
             steps {
                 dir('CalculadoraWeb') {
                     echo 'Generando archivo WAR...'
-                    // Aquí usamos -DskipTests para no repetir las pruebas que ya pasaron
+                    // Lo comprime todo a war y como ya hemos hecho los test en el paso anterior los saltamos
                     sh 'mvn package -DskipTests'
                 }
             }
@@ -33,11 +35,11 @@ pipeline {
         stage('Paso 4: Archivar y Desplegar') {
             steps {
                 dir('CalculadoraWeb') {
+			//Jenkins guarda una copia del war en su servidor
                     archiveArtifacts artifacts: 'target/*.war', fingerprint: true
                     
-                    // Solo llegará aquí si el Paso 2 (Tests) fue EXITOSO
+                    // Copia el war a la carpeta compartida
                     sh 'cp target/*.war /var/jenkins_home/tomcat-deploy/CalculadoraWeb.war'
-                    echo '¡Proyecto desplegado con éxito tras pasar las pruebas!'
                 }
             }
         }
