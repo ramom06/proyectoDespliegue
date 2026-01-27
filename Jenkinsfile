@@ -14,11 +14,9 @@ pipeline {
 
         stage('Paso 2: Pruebas Unitarias') {
             steps {
-		//Le decimos la carpeta en la que esta el proyecto
-                dir('CalculadoraWeb') {
 			//Maven busca en la carpeta java una clase test.java y ejecuta todos los @Test
                     sh 'mvn test'
-                }
+                
             }
         }
 
