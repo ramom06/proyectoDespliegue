@@ -1,4 +1,0 @@
-package org.example.proyectocampeonato.modelo;
-
-public class Combate {
-}
