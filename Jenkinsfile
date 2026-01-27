@@ -2,7 +2,7 @@ pipeline {
     agent any
 	//Aquí indicamos que vamos a usar Maven, importante usar el mismo nombre que le dimos en la conf de Jenkins
     tools {
-        maven 'maven'
+        maven 'Maven'
     }
     stages {
 	//Descarga el código del repositorio configurado
